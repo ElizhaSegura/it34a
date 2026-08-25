@@ -1,8 +1,9 @@
 <?php 
-function logActivity($pdo,$user_id,$email,$action, $status='success'){
+function logActivity($pdo,$user_id,$user_email,$action, $status='success'){
     try{
         //Get Client IP Address
     $ip = $_SERVER['HTTP_x_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADOR'] ?? 'Unknown';
+    //String to Array
     if (strpos($ip,',') !== false){
         $ip = trim (explode(',',$ip)[0]);
     }
@@ -21,9 +22,22 @@ function logActivity($pdo,$user_id,$email,$action, $status='success'){
             ) VALUES (?,?,?,?,?,?)
         ");
 
+            //Execute the INSERT
+         $success = $stmt->execute([
+            $user_id,
+            $user_email,
+            $action,
+            $status,
+            $ip,
+            $user_agent
+        ]);
+
+        return $success;
+
     } catch (PDOException $e) {
         error_log("Activity log Error:" . $e->getMessage());
         return false;
     }
 }
+
 ?>
