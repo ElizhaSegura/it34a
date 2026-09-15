@@ -17,7 +17,34 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
         header('Location: '. BASE_URL . '/app/' . $_SESSION['user_role']. '/index.php');
         exit;
     }
-    $error = 'Invalid login credentials';
+
+    if($login===''|| $password===''){
+         $error = 'Invalid login credentials';
+         logActivity(
+         $pdo,
+         null,
+         $login,
+         'login',
+         'failed'
+         );
+         
+    } else {
+        if(loginuser($pdo,$login,$password)){
+
+         logActivity(
+         $pdo,
+         $_SESSION['user_id'],
+         $_SESSION['user_email'],
+         'login',
+         'success'
+         );
+         
+        header('Location: '. BASE_URL . '/app/' . $_SESSION['user_role']. '/index.php');
+        exit;
+    }
+
+    }
+
 }
 
 ?>
