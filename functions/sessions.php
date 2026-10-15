@@ -52,4 +52,21 @@ function endUserSession($pdo){
     ]);
 }
 
+    // Function check user for active session
+    function hasActiveSession($pdo, $user_id){
+        $stmt = $pdo->prepare("
+            SELECT session_id
+            FROM user_sessions
+            WHERE user_id = :user_id
+            AND session_end IS NULL
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'user_id' => $user_id
+        ]);
+
+        return(bool) $stmt->fetchColumn();
+}
+
 ?>
