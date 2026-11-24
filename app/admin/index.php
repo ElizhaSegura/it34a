@@ -1,26 +1,63 @@
 <?php
 
 require_once '../../config/config.php';
+require_once '../../functions/csv.php';
 
 requireRole('admin');
 
-logActivity(
-    $pdo,
-    $_SESSION['user_id'],
-    $_SESSION['user_email'],
-    'view_activity_logs'
-);
+$section = $_GET['section'] ?? 'activity-logs';
+$action = $_GET['action'] ?? '';
 
 //  Get All Activity Logs
 
 $stmt = $pdo->query("
     SELECT *
     FROM activity_logs
-
     ORDER BY activity_log_created_at DESC
 ");
 
 $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+if($action == 'export') {
+    if($section == 'activity-logs') {
+
+    $stmt = $pdo->query("
+        SELECT 
+            activity_log_id_,
+            user_id,
+            user_email,
+            activity_log_action,
+            activity_log_status,
+            activity_log_ip_address,
+            activity_log_user_agent,
+            activity_log_created_at
+        FROM activity_logs
+        ORDER BY activity_log_created_at DESC
+    ");
+
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+     logactivity(
+        $pdo,
+        $_SESSION['user_id'], 
+        $_SESSION['user_email'], 
+        'export_activity_logs', 
+        'success'
+    );
+
+    exportCsv(
+        'activity_logs',
+        [
+            'Record ID', 'User ID', 'User Email', 'Action',
+            'Status', 'IP Address', 'User Agent', 'Date & Time'
+        ],
+
+        $rows
+    );
+
+    }
+}
+
 
 ?>
 
@@ -42,12 +79,14 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
 
-    <h1>Activity Logs</h1>
-
-    <p>
+    <h1>Welcome Admin!</h1>
         <a href="./../auth/signout.php">Logout</a>
-    </p>
+    
+        <?php if($section === 'activity-logs'):?>
 
+            <h4>Activity Logs
+                <a href="index.php?section=activity-logs&amp;action=export">Export CSV</a>
+            </h4>
 
     <table border="1">
 
@@ -128,6 +167,8 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </tbody>
 
     </table>
+
+     <?php endif; ?>
 
 </body>
 
